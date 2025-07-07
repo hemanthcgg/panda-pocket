@@ -1,19 +1,29 @@
 from flask import Flask, render_template, request, redirect
-
+from flask_sqlalchemy import SQLAlchemy
 # from static.DummyData.data import dummyData, dummyDonut
 
+# Initialize Flask app
 app=Flask(__name__)
 
+# Configure SQLite database
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///panda.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Avoids a warning
+
+# Create SQLAlchemy instance
+db = SQLAlchemy(app)
+
+class User(db.Model):
+    id = db.Column(db.Integer, )
+    user_id = db.Column(db.String(80), primary_key=True, unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
+    email_id = db.Column(db.String(80), unique=True, nullable=False)
+    mobile_no = db.Column(db.String(15), nullable=False)
+
+    def __repr__(self):
+        return f'<User {self.user_id}>'
 
 @app.route('/')
 def index():
-    # pageDate = {
-    #     "tasks": dummyData, 
-    #     "dummyDonut": dummyDonut, 
-    #     "donut_lables" : list(dummyDonut.keys()), 
-    #     "donut_values": list(dummyDonut.values())
-    # }
-    # return render_template('dashboard/dashboard.html', name="Someone", data=pageDate)
     return render_template('index.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -36,4 +46,6 @@ def dashboard(user):
     return render_template('user/dashboard.html', name=user)
 
 if __name__ in "__main__":
+    with app.app_context():  # Needed for DB operations
+        db.create_all()  # Create tables if they don't exist
     app.run(debug=True)
