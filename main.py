@@ -26,6 +26,29 @@ class User(db.Model):
 def index():
     return render_template('index.html')
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        print('I am here')
+        user_id = request.form['user_id']
+        password = request.form['password']
+        email_id = request.form['email_id']
+        mobile_no = request.form['mobile_no']
+
+        # Check if user_id already exists
+        existing_user = User.query.filter_by(user_id=user_id).first()
+        
+        if existing_user:
+            return "User ID already exists", 400
+        # Create a new user instance
+        new_user = User(user_id=user_id, password=password, email_id=email_id, mobile_no=mobile_no)
+        # Add the new user to the database
+        db.session.add(new_user)
+        db.session.commit()
+        return redirect('/login')
+    
+    return render_template('auth/register.html')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():   
     if request.method == 'POST':
@@ -34,12 +57,12 @@ def login():
         password = request.form['password']
         # Here you would typically check the credentials against a database
         if username == 'admin' and password == 'hello':
-            return redirect('/{{username}}/dashboard')
+            return redirect('/dashboard')
         else:
             return "Invalid credentials", 401
     return render_template('auth/login.html')
 
-@app.route('/<user>/dashboard')
+@app.route('/dashboard')
 def dashboard(user):
     print(f"User: {user}")
     # Here you would typically fetch user-specific data from a database
